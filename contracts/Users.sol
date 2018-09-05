@@ -8,27 +8,52 @@ contract Users {
         _;
     }
 
-    mapping (address => string) public accounts;
+    mapping (address => string) addressToAccount;
+    mapping (string => address) accountToAddress;
 
     function register(address _userAddress, string _userAccount)
         external onlyOracle
     {
-        accounts[_userAddress] = _userAccount;
+        require(bytes(addressToAccount[_userAddress]).length == 0);
+        require(accountToAddress[_userAccount] == address(0));
+
+        addressToAccount[_userAddress] = _userAccount;
+        accountToAddress[_userAccount] = _userAddress;
+
+        emit Register(_userAddress, _userAccount);
     }
 
     function getAccountByAddress(address _user)
-        public view returns(string)
+        public view returns (string)
     {
-        return accounts[_user];
+        return addressToAccount[_user];
+    }
+
+    function getAddressByAccount(string _user)
+        public view returns (address)
+    {
+        return accountToAddress[_user];
     }
 
     function exists(address _user)
-        public view returns(bool)
+        public view returns (bool)
     {
-        if (bytes(accounts[_user]).length == 0) {
+        if (bytes(addressToAccount[_user]).length == 0) {
             return false;
         } else {
             return true;
         }
     }
+
+    function accountExists(string _user)
+        public view returns (bool)
+    {
+        if (accountToAddress[_user] == address(0)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    event Register(address _userAddress, string _userAccount);
 }

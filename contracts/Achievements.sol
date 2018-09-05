@@ -3,11 +3,14 @@ pragma solidity ^0.4.24;
 import "./Users.sol";
 
 contract Achievements {
+    address oracle = msg.sender;
+
     struct Achievement {
         address creator;
         string link;
         bytes32 linkHash;
         bytes32 contentHash;
+        string title;
         bool exists;
     }
 
@@ -19,14 +22,31 @@ contract Achievements {
 
     Users users;
 
+    modifier onlyOracle() {
+        require(msg.sender == oracle);
+        _;
+    }
+
     constructor(address _users) public {
         users = Users(_users);
     }
 
-    function create(string _link, bytes32 _contentHash)
-        external returns(bool)
+    function create(string _link, bytes32 _contentHash, string _title)
+        external returns (bool)
     {
-        require(users.exists(msg.sender));
+        return createInternal(msg.sender, _link, _contentHash, _title);
+    }
+
+    function createFrom(address _user, string _link, bytes32 _contentHash, string _title)
+        external onlyOracle returns (bool)
+    {
+        return createInternal(_user, _link, _contentHash, _title);
+    }
+
+    function createInternal(address _user, string _link, bytes32 _contentHash, string _title)
+        internal returns (bool)
+    {
+        require(users.exists(_user));
 
         bytes32 linkHash = keccak256(abi.encodePacked(_link));
 
@@ -37,15 +57,20 @@ contract Achievements {
             _link,
             linkHash,
             _contentHash,
+            _title,
             true
         );
 
         achievements[linkHash] = achievement;
         achievementsList.push(achievement);
+
+        emit Create(_link, msg.sender);
+
+        return true;
     }
 
     function confirmInternal(string _link, address _user)
-        internal returns(bool)
+        internal returns (bool)
     {
         require(users.exists(_user));
 
@@ -56,6 +81,8 @@ contract Achievements {
         confirmed[linkHash][_user] = true;
         witnesses[linkHash].push(_user);
 
+        emit Confirm(_link, _user);
+
         return true;
     }
 
@@ -65,15 +92,9 @@ contract Achievements {
         return confirmInternal(_link, msg.sender);
     }
 
-    function confirmFrom(address _user, string _link, uint8 v, bytes32 r, bytes32 s)
-        external returns (bool)
+    function confirmFrom(address _user, string _link)
+        external onlyOracle returns (bool)
     {
-        bytes32 hash = keccak256(abi.encodePacked(_user, _link));
-
-        address signer = ecrecover(hash, v, r, s);
-
-        require(signer == _user);
-
         return confirmInternal(_link, _user);
     }
 
@@ -94,4 +115,23 @@ contract Achievements {
     {
         return achievements[_linkHash].creator;
     }
+
+    function getAchievement(bytes32 _linkHash)
+        external view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title)
+    {
+        creator = achievements[_linkHash].creator;
+        link = achievements[_linkHash].link;
+        linkHash = achievements[_linkHash].linkHash;
+        contentHash = achievements[_linkHash].contentHash;
+        title = achievements[_linkHash].title;
+    }
+
+    function confirmedBy(bytes32 _linkHash, address _witness)
+        public view returns (bool)
+    {
+        return confirmed[_linkHash][_witness];
+    }
+
+    event Create(string link, address creator);
+    event Confirm(string link, address witness);
 }

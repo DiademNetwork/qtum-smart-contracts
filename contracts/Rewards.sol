@@ -11,36 +11,41 @@ contract Rewards {
         achievements = Achievements(_achievements);
     }
 
-    function deposit(bytes32 _linkHash, address _witness)
+    function deposit(string _link, address _witness)
         external payable returns (bool)
     {
-        require(achievements.exists(_linkHash));
+        bytes32 linkHash = keccak256(abi.encodePacked(_link));
 
-        deposits[_linkHash][_witness] += msg.value;
+        require(achievements.exists(linkHash));
 
-        emit Deposit(_linkHash, _witness);
+        deposits[linkHash][_witness] += msg.value;
+
+        emit Deposit(linkHash, _witness);
 
         return true;
     }
 
-    function withdraw(bytes32 _linkHash, address _witness)
+    function withdraw(string _link, address _witness)
         external returns (bool)
     {
-        require(achievements.exists(_linkHash));
-        require(deposits[_linkHash][_witness] > 0);
+        bytes32 linkHash = keccak256(abi.encodePacked(_link));
 
-        address beneficiary = achievements.getAchievementCreator(_linkHash);
+        require(achievements.exists(linkHash));
+        require(achievements.confirmedBy(linkHash, _witness));
+        require(deposits[linkHash][_witness] > 0);
 
-        uint256 value = deposits[_linkHash][_witness];
-        deposits[_linkHash][_witness] = 0;
+        address beneficiary = achievements.getAchievementCreator(linkHash);
+
+        uint256 value = deposits[linkHash][_witness];
+        deposits[linkHash][_witness] = 0;
 
         beneficiary.transfer(value);
 
-        emit Withdraw(_linkHash, _witness, value, beneficiary);
+        emit Withdraw(linkHash, _witness, value, beneficiary);
 
         return true;
     }
 
-    event Deposit(bytes32 _linkHash, address _witness);
-    event Withdraw(bytes32 _linkHash, address _witness, uint256 _value, address _user);
+    event Deposit(bytes32 linkHash, address _witness);
+    event Withdraw(bytes32 linkHash, address _witness, uint256 _value, address _user);
 }

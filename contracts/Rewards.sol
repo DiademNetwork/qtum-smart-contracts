@@ -11,16 +11,38 @@ contract Rewards {
         achievements = Achievements(_achievements);
     }
 
+    function hash(string _link)
+        public returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_link));
+    }
+
+    function support(string _link)
+        external payable returns (bool)
+    {
+        bytes32 linkHash = hash(_link);
+
+        require(achievements.exists(linkHash));
+
+        address beneficiary = achievements.getAchievementCreator(linkHash);
+
+        beneficiary.transfer(msg.value);
+
+        emit Support(linkHash, msg.value);
+
+        return true;
+    }
+
     function deposit(string _link, address _witness)
         external payable returns (bool)
     {
-        bytes32 linkHash = keccak256(abi.encodePacked(_link));
+        bytes32 linkHash = hash(_link);
 
         require(achievements.exists(linkHash));
 
         deposits[linkHash][_witness] += msg.value;
 
-        emit Deposit(linkHash, _witness);
+        emit Deposit(linkHash, _witness, msg.value);
 
         return true;
     }
@@ -28,7 +50,7 @@ contract Rewards {
     function withdraw(string _link, address _witness)
         external returns (bool)
     {
-        bytes32 linkHash = keccak256(abi.encodePacked(_link));
+        bytes32 linkHash = hash(_link);
 
         require(achievements.exists(linkHash));
         require(achievements.confirmedBy(linkHash, _witness));
@@ -46,6 +68,7 @@ contract Rewards {
         return true;
     }
 
-    event Deposit(bytes32 linkHash, address _witness);
+    event Support(bytes32 linkHash, uint256 _value);
+    event Deposit(bytes32 linkHash, address _witness, uint256 _value);
     event Withdraw(bytes32 linkHash, address _witness, uint256 _value, address _user);
 }

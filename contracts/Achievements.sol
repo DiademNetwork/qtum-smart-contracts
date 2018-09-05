@@ -48,7 +48,7 @@ contract Achievements {
     {
         require(users.exists(_user));
 
-        bytes32 linkHash = keccak256(abi.encodePacked(_link));
+        bytes32 linkHash = hash(_link);
 
         require(achievements[linkHash].exists == false);
 
@@ -69,12 +69,18 @@ contract Achievements {
         return true;
     }
 
+    function hash(string _link)
+        public returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_link));
+    }
+
     function confirmInternal(string _link, address _user)
         internal returns (bool)
     {
         require(users.exists(_user));
 
-        bytes32 linkHash = keccak256(abi.encodePacked(_link));
+        bytes32 linkHash = hash(_link);
 
         require(achievements[linkHash].exists == true);
 
@@ -105,19 +111,19 @@ contract Achievements {
     }
 
     function exists(bytes32 _linkHash)
-        external view returns (bool)
+        public view returns (bool)
     {
         return achievements[_linkHash].exists;
     }
 
     function getAchievementCreator(bytes32 _linkHash)
-        external view returns (address)
+        public view returns (address)
     {
         return achievements[_linkHash].creator;
     }
 
     function getAchievement(bytes32 _linkHash)
-        external view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title)
+        public view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title)
     {
         creator = achievements[_linkHash].creator;
         link = achievements[_linkHash].link;
@@ -130,6 +136,33 @@ contract Achievements {
         public view returns (bool)
     {
         return confirmed[_linkHash][_witness];
+    }
+
+    function existsRaw(string _link)
+        public view returns (bool)
+    {
+        bytes32 linkHash = hash(_link);
+        return exists(linkHash);
+    }
+
+    function getAchievementCreatorRaw(string _link)
+        public view returns (address)
+    {
+        bytes32 linkHash = hash(_link);
+        return getAchievementCreator(linkHash);
+    }
+
+    function confirmedByRaw(string _link, address _witness)
+        public view returns (bool)
+    {
+        bytes32 linkHash = hash(_link);
+        return confirmedBy(linkHash, _witness);
+    }
+
+    function getAchievementRaw(string _link)
+        public view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title)
+    {
+        return getAchievement(hash(_link));
     }
 
     event Create(string link, address creator);

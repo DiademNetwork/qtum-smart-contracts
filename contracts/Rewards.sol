@@ -5,7 +5,8 @@ import "./Achievements.sol";
 contract Rewards {
     Achievements achievements;
 
-    mapping (bytes32 => mapping (address => uint256)) deposits;
+    mapping (bytes32 => mapping (address => uint256)) public deposits;
+    mapping (bytes32 => address[]) public witnesses;
 
     constructor(address _achievements) public {
         achievements = Achievements(_achievements);
@@ -15,6 +16,14 @@ contract Rewards {
         public returns (bytes32)
     {
         return keccak256(abi.encodePacked(_link));
+    }
+
+    function getRewardAmount(string _link, address _witness)
+        public view returns (uint256)
+    {
+        bytes32 linkHash = hash(_link);
+
+        return deposits[linkHash][_witness];
     }
 
     function support(string _link)
@@ -41,6 +50,7 @@ contract Rewards {
         require(achievements.exists(linkHash));
 
         deposits[linkHash][_witness] += msg.value;
+        witnesses[linkHash].push(_witness);
 
         emit Deposit(linkHash, _witness, msg.value);
 

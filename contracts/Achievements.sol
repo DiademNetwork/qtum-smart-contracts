@@ -49,7 +49,7 @@ contract Achievements {
     function createInternal(address _user, string _link, bytes32 _contentHash, string _title, string _previousLink)
         internal returns (bool)
     {
-        require(users.exists(_user));
+        // require(users.exists(_user));
 
         bytes32 linkHash = hash(_link);
 
@@ -66,7 +66,7 @@ contract Achievements {
         }
 
         Achievement memory achievement = Achievement(
-            msg.sender,
+            _user,
             _link,
             linkHash,
             _contentHash,

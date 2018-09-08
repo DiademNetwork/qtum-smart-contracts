@@ -1,0 +1,18 @@
+{
+  "name": "qtum-smart-contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": "git@github.com:DiademNetwork/qtum-smart-contracts.git",
+  "author": "7flash <igor@berlenko.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bs58": "^4.0.1",
+    "chai": "^4.1.2",
+    "dotenv": "^6.0.0",
+    "mocha": "^5.2.0",
+    "qtumjs": "^1.9.1"
+  }
+}

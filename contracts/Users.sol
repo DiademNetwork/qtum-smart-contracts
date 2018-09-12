@@ -8,19 +8,46 @@ contract Users {
         _;
     }
 
+    struct User {
+        address userAddress;
+        string userAccount;
+        string userName;
+        bool exists;
+    }
+
+    mapping (address => User) users;
+    mapping (string => address) accounts;
+    address[] usersList;
+
     mapping (address => string) addressToName;
     mapping (address => string) addressToAccount;
     mapping (string => address) accountToAddress;
 
+    function getUsersCount()
+        public view returns (uint256)
+    {
+        return usersList.length;
+    }
+
+    function getUser(address _user)
+        public view returns (address userAddress, string userAccount, string userName)
+    {
+        userAddress = users[_user].userAddress;
+        userAccount = users[_user].userAccount;
+        userName = users[_user].userName;
+    }
+
     function register(address _userAddress, string _userAccount, string _userName)
         external onlyOracle
     {
-        require(bytes(addressToAccount[_userAddress]).length == 0);
-        require(accountToAddress[_userAccount] == address(0));
+        require(users[_userAddress].exists == false);
+        require(accounts[_userAccount] == address(0));
 
-        addressToAccount[_userAddress] = _userAccount;
-        accountToAddress[_userAccount] = _userAddress;
-        addressToName[_userAddress] = _userName;
+        User memory user = User(_userAddress, _userAccount, _userName, true);
+
+        users[_userAddress] = user;
+        accounts[_userAccount] = _userAddress;
+        usersList.push(_userAddress);
 
         emit Register(_userAddress, _userAccount, _userName);
     }
@@ -28,35 +55,31 @@ contract Users {
     function getAccountByAddress(address _user)
         public view returns (string)
     {
-        return addressToAccount[_user];
+        return users[_user].userAccount;
     }
 
     function getAddressByAccount(string _user)
         public view returns (address)
     {
-        return accountToAddress[_user];
+        return accounts[_user].userAddress;
     }
 
     function getNameByAddress(address _user)
         public view returns (string)
     {
-        return addressToName[_user];
+        return users[_user].userName;
     }
 
     function exists(address _user)
         public view returns (bool)
     {
-        if (bytes(addressToAccount[_user]).length == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        returns users[_user].exists;
     }
 
     function accountExists(string _user)
         public view returns (bool)
     {
-        if (accountToAddress[_user] == address(0)) {
+        if (accounts[_user] == address(0)) {
             return false;
         } else {
             return true;

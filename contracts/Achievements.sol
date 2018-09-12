@@ -49,20 +49,27 @@ contract Achievements {
     function createInternal(address _user, string _link, bytes32 _contentHash, string _title, string _previousLink)
         internal returns (bool)
     {
-        // require(users.exists(_user));
+        require(users.exists(_user));
 
         bytes32 linkHash = hash(_link);
 
         require(achievements[linkHash].exists == false);
 
-        // if user wanna to append achievement to existing chain of achievements
-        if (bytes(_previousLink).length != 0) {
+        string memory actor = users.getAccountByAddress(_user);
+        string memory name = users.getNameByAddress(_user);
+
+        // User can create new chain of achievements or append achievement to existing chain
+        if (bytes(_previousLink).length == 0) {
+            emit Create(_user, _link, _title, actor, name);
+        } else {
             bytes32 previousLinkHash = hash(_previousLink);
 
             require(exists(previousLinkHash));
             require(getAchievementCreator(previousLinkHash) == _user);
 
             achievements[previousLinkHash].active = false;
+
+            emit Update(_user, _link, _title, actor, name);
         }
 
         Achievement memory achievement = Achievement(
@@ -77,10 +84,8 @@ contract Achievements {
             previousLinkHash
         );
 
-            achievements[linkHash] = achievement;
+        achievements[linkHash] = achievement;
         achievementsList.push(linkHash);
-
-        emit Create(_link, msg.sender);
 
         return true;
     }
@@ -103,7 +108,11 @@ contract Achievements {
         confirmed[linkHash][_user] = true;
         witnesses[linkHash].push(_user);
 
-        emit Confirm(_link, _user);
+        address wallet = getAchievementCreator(linkHash);
+        string memory actor = users.getAccountByAddress(_user);
+        string memory name = users.getNameByAddress(_user);
+
+        emit Confirm(_user, _link, wallet, actor, name);
 
         return true;
     }
@@ -186,6 +195,7 @@ contract Achievements {
         return getAchievement(hash(_link));
     }
 
-    event Create(string link, address creator);
-    event Confirm(string link, address witness);
+    event Create(address user, string link, string title, string actor, string name);
+    event Update(address user, string link, string title, string actor, string name);
+    event Confirm(address witness, string link, address wallet, string actor, string name);
 }

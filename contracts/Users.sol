@@ -8,10 +8,11 @@ contract Users {
         _;
     }
 
+    mapping (address => string) addressToName;
     mapping (address => string) addressToAccount;
     mapping (string => address) accountToAddress;
 
-    function register(address _userAddress, string _userAccount)
+    function register(address _userAddress, string _userAccount, string _userName)
         external onlyOracle
     {
         require(bytes(addressToAccount[_userAddress]).length == 0);
@@ -19,8 +20,9 @@ contract Users {
 
         addressToAccount[_userAddress] = _userAccount;
         accountToAddress[_userAccount] = _userAddress;
+        addressToName[_userAddress] = _userName;
 
-        emit Register(_userAddress, _userAccount);
+        emit Register(_userAddress, _userAccount, _userName);
     }
 
     function getAccountByAddress(address _user)
@@ -33,6 +35,12 @@ contract Users {
         public view returns (address)
     {
         return accountToAddress[_user];
+    }
+
+    function getNameByAddress(address _user)
+        public view returns (string)
+    {
+        return addressToName[_user];
     }
 
     function exists(address _user)
@@ -55,5 +63,5 @@ contract Users {
         }
     }
 
-    event Register(address _userAddress, string _userAccount);
+    event Register(address _userAddress, string _userAccount, string _userName);
 }

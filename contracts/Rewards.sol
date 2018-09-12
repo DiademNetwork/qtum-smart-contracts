@@ -31,7 +31,7 @@ contract Rewards {
     {
         bytes32 linkHash = hash(_link);
 
-        require(achievements.exists(linkHash));
+        // require(achievements.exists(linkHash));
 
         address beneficiary = achievements.getAchievementCreator(linkHash);
 
@@ -47,7 +47,7 @@ contract Rewards {
     {
         bytes32 linkHash = hash(_link);
 
-        require(achievements.exists(linkHash));
+        // require(achievements.exists(linkHash));
 
         deposits[linkHash][_witness] += msg.value;
         witnesses[linkHash].push(_witness);
@@ -64,9 +64,9 @@ contract Rewards {
     {
         bytes32 linkHash = hash(_link);
 
-        require(achievements.exists(linkHash));
-        require(achievements.confirmedBy(linkHash, _witness));
-        require(deposits[linkHash][_witness] > 0);
+        // require(achievements.exists(linkHash));
+        // require(achievements.confirmedBy(linkHash, _witness));
+        // require(deposits[linkHash][_witness] > 0);
 
         address beneficiary = achievements.getAchievementCreator(linkHash);
 

@@ -52,6 +52,8 @@ contract Rewards {
         deposits[linkHash][_witness] += msg.value;
         witnesses[linkHash].push(_witness);
 
+        address beneficiary = achievements.getAchievementCreator(linkHash);
+
         emit Deposit(beneficiary, _link, msg.sender, msg.value, _witness);
 
         return true;
@@ -80,5 +82,5 @@ contract Rewards {
 
     event Support(address wallet, string object, address user, uint256 amount);
     event Deposit(address wallet, string object, address user, uint256 amount, address witness);
-    event Withdraw(address wallet, string object, address user, uint256 amount, address witness);
+    event Withdraw(address wallet, string object, uint256 amount, address witness);
 }

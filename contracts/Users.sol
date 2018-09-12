@@ -61,7 +61,7 @@ contract Users {
     function getAddressByAccount(string _user)
         public view returns (address)
     {
-        return accounts[_user].userAddress;
+        return accounts[_user];
     }
 
     function getNameByAddress(address _user)
@@ -73,7 +73,7 @@ contract Users {
     function exists(address _user)
         public view returns (bool)
     {
-        returns users[_user].exists;
+        return users[_user].exists;
     }
 
     function accountExists(string _user)

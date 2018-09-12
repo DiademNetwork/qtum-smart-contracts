@@ -135,18 +135,12 @@ contract Achievements {
     }
 
     function getAchievement(bytes32 _linkHash)
-        public view returns (address creator, bytes32 linkHash, bytes32 previousLinkHash, bool active, bool exists)
+        public view returns (address creator, bytes32 linkHash, bytes32 previousLinkHash, bool active)
     {
-        if (achievements[_linkHash].exists == true) {
-            creator = achievements[_linkHash].creator;
-            link = achievements[_linkHash].link;
-            linkHash = achievements[_linkHash].linkHash;
-            contentHash = achievements[_linkHash].contentHash;
-            title = achievements[_linkHash].title;
-            previousLink = achievements[linkHash].previousLink;
-            previousLinkHash = achievements[linkHash].previousLinkHash;
-            active = achievements[linkHash].active;
-        }
+        creator = achievements[_linkHash].creator;
+        linkHash = achievements[_linkHash].linkHash;
+        previousLinkHash = achievements[_linkHash].previousLinkHash;
+        active = achievements[_linkHash].active;
     }
 
     function confirmedBy(bytes32 _linkHash, address _witness)
@@ -177,7 +171,7 @@ contract Achievements {
     }
 
     function getAchievementRaw(string _link)
-        public view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title, string previousLink, bytes32 previousLinkHash, bool active)
+        public view returns (address creator, bytes32 linkHash, bytes32 previousLinkHash, bool active)
     {
         return getAchievement(hash(_link));
     }

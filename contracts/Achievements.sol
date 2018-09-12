@@ -7,14 +7,10 @@ contract Achievements {
 
     struct Achievement {
         address creator;
-        string link;
         bytes32 linkHash;
-        bytes32 contentHash;
-        string title;
+        bytes32 previousLinkHash;
         bool exists;
         bool active;
-        string previousLink;
-        bytes32 previousLinkHash;
     }
 
     mapping (bytes32 => Achievement) achievements;
@@ -55,12 +51,9 @@ contract Achievements {
 
         require(achievements[linkHash].exists == false);
 
-        string memory actor = users.getAccountByAddress(_user);
-        string memory name = users.getNameByAddress(_user);
-
         // User can create new chain of achievements or append achievement to existing chain
         if (bytes(_previousLink).length == 0) {
-            emit Create(_user, _link, _title, actor, name);
+            emit Create(_user, _link, _title, _contentHash);
         } else {
             bytes32 previousLinkHash = hash(_previousLink);
 
@@ -69,19 +62,15 @@ contract Achievements {
 
             achievements[previousLinkHash].active = false;
 
-            emit Update(_user, _link, _title, actor, name);
+            emit Update(_user, _link, _title, _contentHash, _previousLink);
         }
 
         Achievement memory achievement = Achievement(
             _user,
-            _link,
             linkHash,
-            _contentHash,
-            _title,
+            previousLinkHash,
             true,
-            true,
-            _previousLink,
-            previousLinkHash
+            true
         );
 
         achievements[linkHash] = achievement;
@@ -108,11 +97,9 @@ contract Achievements {
         confirmed[linkHash][_user] = true;
         witnesses[linkHash].push(_user);
 
-        address wallet = getAchievementCreator(linkHash);
-        string memory actor = users.getAccountByAddress(_user);
-        string memory name = users.getNameByAddress(_user);
+        address creator = getAchievementCreator(linkHash);
 
-        emit Confirm(_user, _link, wallet, actor, name);
+        emit Confirm(creator, _link, _user);
 
         return true;
     }
@@ -148,7 +135,7 @@ contract Achievements {
     }
 
     function getAchievement(bytes32 _linkHash)
-        public view returns (address creator, string link, bytes32 linkHash, bytes32 contentHash, string title, string previousLink, bytes32 previousLinkHash, bool active)
+        public view returns (address creator, bytes32 linkHash, bytes32 previousLinkHash, bool active, bool exists)
     {
         if (achievements[_linkHash].exists == true) {
             creator = achievements[_linkHash].creator;
@@ -195,7 +182,7 @@ contract Achievements {
         return getAchievement(hash(_link));
     }
 
-    event Create(address user, string link, string title, string actor, string name);
-    event Update(address user, string link, string title, string actor, string name);
-    event Confirm(address witness, string link, address wallet, string actor, string name);
+    event Create(address wallet, string object, string title, bytes32 contentHash);
+    event Update(address wallet, string object, string title, bytes32 contentHash, string previousLink);
+    event Confirm(address wallet, string object, address user);
 }

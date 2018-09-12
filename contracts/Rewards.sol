@@ -37,7 +37,7 @@ contract Rewards {
 
         beneficiary.transfer(msg.value);
 
-        emit Support(linkHash, msg.value);
+        emit Support(beneficiary, _link, msg.sender, msg.value);
 
         return true;
     }
@@ -52,7 +52,7 @@ contract Rewards {
         deposits[linkHash][_witness] += msg.value;
         witnesses[linkHash].push(_witness);
 
-        emit Deposit(linkHash, _witness, msg.value);
+        emit Deposit(beneficiary, _link, msg.sender, msg.value, _witness);
 
         return true;
     }
@@ -73,12 +73,12 @@ contract Rewards {
 
         beneficiary.transfer(value);
 
-        emit Withdraw(linkHash, _witness, value, beneficiary);
+        emit Withdraw(beneficiary, _link, value, _witness);
 
         return true;
     }
 
-    event Support(bytes32 linkHash, uint256 _value);
-    event Deposit(bytes32 linkHash, address _witness, uint256 _value);
-    event Withdraw(bytes32 linkHash, address _witness, uint256 _value, address _user);
+    event Support(address wallet, string object, address user, uint256 amount);
+    event Deposit(address wallet, string object, address user, uint256 amount, address witness);
+    event Withdraw(address wallet, string object, address user, uint256 amount, address witness);
 }

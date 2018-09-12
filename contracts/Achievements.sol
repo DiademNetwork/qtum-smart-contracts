@@ -51,12 +51,12 @@ contract Achievements {
 
         require(achievements[linkHash].exists == false);
 
+        bytes32 previousLinkHash = hash(_previousLink);
+
         // User can create new chain of achievements or append achievement to existing chain
         if (bytes(_previousLink).length == 0) {
             emit Create(_user, _link, _title, _contentHash);
         } else {
-            bytes32 previousLinkHash = hash(_previousLink);
-
             require(exists(previousLinkHash));
             require(getAchievementCreator(previousLinkHash) == _user);
 
@@ -88,7 +88,7 @@ contract Achievements {
     function confirmInternal(string _link, address _user)
         internal returns (bool)
     {
-        require(users.exists(_user));
+        // require(users.exists(_user));
 
         bytes32 linkHash = hash(_link);
 

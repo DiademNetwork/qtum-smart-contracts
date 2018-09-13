@@ -23,6 +23,14 @@ contract Users {
     mapping (address => string) addressToAccount;
     mapping (string => address) accountToAddress;
 
+    function getUserByIndex(uint256 index)
+        public view returns (address userAddress, string userAccount, string userName)
+     {
+        userAddress = usersList[index];
+        userAccount = users[userAddress].userAccount;
+        userName = users[userAddress].userName;
+     }
+
     function getUsersCount()
         public view returns (uint256)
     {

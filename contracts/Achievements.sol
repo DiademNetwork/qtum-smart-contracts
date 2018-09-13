@@ -92,6 +92,7 @@ contract Achievements {
 
         bytes32 linkHash = hash(_link);
 
+        require(confirmedBy(linkHash, _user) == false);
         require(achievements[linkHash].exists == true);
 
         confirmed[linkHash][_user] = true;

@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./Users.sol";
+import "./Rewards.sol";
 
 contract Achievements {
     address oracle = msg.sender;
@@ -20,7 +21,8 @@ contract Achievements {
     mapping (bytes32 => address[]) witnesses;
     mapping (bytes32 => bool) links;
 
-    Users public users;
+    address public users;
+    address public rewards;
 
     modifier onlyOracle() {
         require(msg.sender == oracle);
@@ -28,7 +30,17 @@ contract Achievements {
     }
 
     constructor(address _users) public {
-        users = Users(_users);
+        users = _users;
+    }
+
+    function initRewards(address _rewards)
+        external onlyOracle returns(bool)
+    {
+        require(rewards == address(0));
+
+        rewards = _rewards;
+
+        return true;
     }
 
     function create(string _link, bytes32 _contentHash, string _title, string _previousLink)
@@ -46,7 +58,7 @@ contract Achievements {
     function createInternal(address _user, string _link, bytes32 _contentHash, string _title, string _previousLink)
         internal returns (bool)
     {
-        require(users.exists(_user));
+        require(Users(users).exists(_user));
 
         bytes32 linkHash = hash(_link);
 
@@ -91,7 +103,7 @@ contract Achievements {
     function confirmInternal(string _link, address _user)
         internal returns (bool)
     {
-        require(users.exists(_user));
+        require(Users(users).exists(_user));
 
         bytes32 linkHash = hash(_link);
 
@@ -102,6 +114,14 @@ contract Achievements {
         witnesses[linkHash].push(_user);
 
         address creator = getAchievementCreator(linkHash);
+
+        if (rewards != address(0)) {
+            uint256 rewardAmount = Rewards(rewards).getRewardAmount(_link, _user);
+
+            if (rewardAmount > 0) {
+                Rewards(rewards).withdraw(_link, _user);
+            }
+        }
 
         emit Confirm(creator, _link, _user);
 

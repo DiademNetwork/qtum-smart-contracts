@@ -20,7 +20,7 @@ contract Achievements {
     mapping (bytes32 => address[]) witnesses;
     mapping (bytes32 => bool) links;
 
-    Users users;
+    address public users;
 
     modifier onlyOracle() {
         require(msg.sender == oracle);
@@ -28,7 +28,7 @@ contract Achievements {
     }
 
     constructor(address _users) public {
-        users = Users(_users);
+        users = _users;
     }
 
     function create(string _link, bytes32 _contentHash, string _title, string _previousLink)

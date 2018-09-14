@@ -18,6 +18,7 @@ contract Achievements {
 
     mapping (bytes32 => mapping(address => bool)) confirmed;
     mapping (bytes32 => address[]) witnesses;
+    mapping (bytes32 => bool) links;
 
     Users users;
 
@@ -49,7 +50,7 @@ contract Achievements {
 
         bytes32 linkHash = hash(_link);
 
-        require(achievements[linkHash].exists == false);
+        require(exists(linkHash) == false);
 
         bytes32 previousLinkHash = hash(_previousLink);
 
@@ -57,9 +58,11 @@ contract Achievements {
         if (bytes(_previousLink).length == 0) {
             emit Create(_user, _link, _title, _contentHash);
         } else {
-            require(exists(previousLinkHash));
+            require(links[previousLinkHash] == false);
+            require(exists(previousLinkHash) == true);
             require(getAchievementCreator(previousLinkHash) == _user);
 
+            links[previousLinkHash] = true;
             achievements[previousLinkHash].active = false;
 
             emit Update(_user, _link, _title, _contentHash, _previousLink);

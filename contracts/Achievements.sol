@@ -20,7 +20,7 @@ contract Achievements {
     mapping (bytes32 => address[]) witnesses;
     mapping (bytes32 => bool) links;
 
-    address public users;
+    Users public users;
 
     modifier onlyOracle() {
         require(msg.sender == oracle);
@@ -28,7 +28,7 @@ contract Achievements {
     }
 
     constructor(address _users) public {
-        users = _users;
+        users = Users(_users);
     }
 
     function create(string _link, bytes32 _contentHash, string _title, string _previousLink)
@@ -46,7 +46,7 @@ contract Achievements {
     function createInternal(address _user, string _link, bytes32 _contentHash, string _title, string _previousLink)
         internal returns (bool)
     {
-        // require(users.exists(_user));
+        require(users.exists(_user));
 
         bytes32 linkHash = hash(_link);
 
@@ -91,7 +91,7 @@ contract Achievements {
     function confirmInternal(string _link, address _user)
         internal returns (bool)
     {
-        // require(users.exists(_user));
+        require(users.exists(_user));
 
         bytes32 linkHash = hash(_link);
 

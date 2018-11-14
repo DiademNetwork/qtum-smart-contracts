@@ -17,6 +17,16 @@ describe('Contracts', () => {
   let achievements = null
   let rewards = null
 
+  const authorAddress = '360af3ba8bf00e6c4b5177f54b643a330ca3a5a6'
+  const sponsorAddress = '63d75a7f8b447c8b911efa14a621bcc422d2dd9c'
+  const witnessAddress = '76b1e0325250e4cfc9a24c6478c333cf3e9040e7'
+  const authorAccount = 'authorID2'
+  const authorName = 'author'
+  const sponsorAccount = 'sponsorID2'
+  const postLink = 'facebook.com/postid'
+  const postContentHash = ''
+  const title = 'John is going to publish second chapter of his book'
+
   before(() => {
     const repo = require('../solar.development.json')
     qtum = new Qtum(process.env.QTUM_RPC_ADDRESS, repo)
@@ -29,23 +39,14 @@ describe('Contracts', () => {
   describe('Sponsors support author of book for publishing new chapters', function () {
     this.timeout(123123)
 
-    const authorAddress = '360af3ba8bf00e6c4b5177f54b643a330ca3a5a6'
-    const sponsorAddress = '63d75a7f8b447c8b911efa14a621bcc422d2dd9c'
-    const witnessAddress = '76b1e0325250e4cfc9a24c6478c333cf3e9040e7'
-    const authorAccount = 'authorID2'
-    const sponsorAccount = 'sponsorID2'
-    const postLink = 'facebook.com/postid'
-    const postContentHash = ''
-    const title = 'John is going to publish second chapter of his book'
-
     it('test', async () => {
-      const response = await qtum.rawCall('gettransactionreceipt', ['e4369c9a61abf3e70110839fb1f5aca064d8232a30247444f9b96e79eb66ed6b'])
+      const response = await qtum.rawCall('getwalletinfo')
 
       console.log(JSON.stringify(response))
     })
 
     it('author can verify his identity with profile in facebook', async () => {
-      const tx = await users.send('register', [authorAddress, authorAccount], options)
+      const tx = await users.send('register', [authorAddress, authorAccount, authorName], options)
 
       await tx.confirm(1)
 
@@ -136,6 +137,24 @@ describe('Contracts', () => {
       const amount = tx.outputs[0]
 
       expect(amount).to.be.equal(0)
+    })
+  })
+
+  describe('Migration', function() {
+    it('should allow to migrate support transactions', async () => {
+      const tx = await rewards.send('supportMigrate', [postLink, options.senderAddress], { senderAddress: options.senderAddress, value: 10 })
+
+      await tx.confirm(1)
+
+      console.log(`${options.senderAddress} sent funds for ${postLink} at ${tx.txid}`)
+    })
+
+    it('should allow to migrate deposit transactions', async () => {
+      const tx = await rewards.send('depositMigrate', [postLink, witnessAddress, options.senderAddress], { senderAddress: options.senderAddress, value: 20 })
+
+      await tx.confirm(1)
+
+      console.log(`${options.senderAddress} => ${postLink} when ${witnessAddress} at ${txid}`)
     })
   })
 })

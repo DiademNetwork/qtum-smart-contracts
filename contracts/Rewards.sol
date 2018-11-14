@@ -4,12 +4,19 @@ import "./Achievements.sol";
 
 contract Rewards {
     Achievements achievements;
+    address migrationManager;
+
+    modifier onlyMigrationManager() {
+        require(msg.sender == migrationManager);
+        _;
+    }
 
     mapping (bytes32 => mapping (address => uint256)) public deposits;
     mapping (bytes32 => address[]) public witnesses;
 
     constructor(address _achievements) public {
         achievements = Achievements(_achievements);
+        migrationManager = msg.sender;
     }
 
     function hash(string _link)
@@ -42,6 +49,22 @@ contract Rewards {
         return true;
     }
 
+    function supportMigrate(string _link, address _sender)
+        external payable onlyMigrationManager returns (bool)
+    {
+        bytes32 linkHash = hash(_link);
+
+        require(achievements.exists(linkHash));
+
+        address beneficiary = achievements.getAchievementCreator(linkHash);
+
+        beneficiary.transfer(msg.value);
+
+        emit Support(beneficiary, _link, _sender, msg.value);
+
+        return true;
+    }
+
     function deposit(string _link, address _witness)
         external payable returns (bool)
     {
@@ -55,6 +78,23 @@ contract Rewards {
         address beneficiary = achievements.getAchievementCreator(linkHash);
 
         emit Deposit(beneficiary, _link, msg.sender, msg.value, _witness);
+
+        return true;
+    }
+
+    function depositMigrate(string _link, address _witness, address _sender)
+        external payable onlyMigrationManager returns (bool)
+    {
+        bytes32 linkHash = hash(_link);
+
+        require(achievements.exists(linkHash));
+
+        deposits[linkHash][_witness] += msg.value;
+        witnesses[linkHash].push(_witness);
+
+        address beneficiary = achievements.getAchievementCreator(linkHash);
+
+        emit Deposit(beneficiary, _link, _sender, msg.value, _witness);
 
         return true;
     }
